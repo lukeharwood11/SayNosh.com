@@ -137,6 +137,62 @@ function resolveIncludedTypes(cuisines?: string[], mealType = 'dinner'): string[
   return MEAL_TYPE_DEFAULTS[mealType] ?? MEAL_TYPE_DEFAULTS.dinner
 }
 
+/** User picked specific cuisines (not "Any") — drives strict type matching + multi-search. */
+function explicitCuisineKeys(cuisines?: string[]): string[] {
+  if (!Array.isArray(cuisines) || cuisines.length === 0) return []
+  return cuisines.filter((c) => (FOOD_FILTER_TYPES[c]?.length ?? 0) > 0)
+}
+
+type GooglePlace = {
+  id?: string
+  displayName?: { text?: string }
+  location?: { latitude?: number; longitude?: number }
+  rating?: number
+  priceLevel?: string
+  primaryType?: string
+  types?: string[]
+  photos?: Array<{ name?: string }>
+  formattedAddress?: string
+  regularOpeningHours?: { openNow?: boolean }
+  websiteUri?: string
+}
+
+function placeMatchesIncludedTypes(place: GooglePlace, allowedTypes: Set<string>): boolean {
+  if (allowedTypes.size === 0) return true
+  if (place.primaryType && allowedTypes.has(place.primaryType)) return true
+  for (const t of place.types ?? []) {
+    if (allowedTypes.has(t)) return true
+  }
+  return false
+}
+
+const MIN_STRICT_RESULTS = 6
+
+function filterByPriceAndOpen(
+  candidates: RestaurantCandidate[],
+  allowedPrices: Set<number> | null,
+  filterOpenNow: boolean,
+  strict: boolean,
+): RestaurantCandidate[] {
+  return candidates.filter((p) => {
+    if (allowedPrices) {
+      if (strict) {
+        if (p.price_level == null || !allowedPrices.has(p.price_level)) return false
+      } else if (p.price_level != null && !allowedPrices.has(p.price_level)) {
+        return false
+      }
+    }
+    if (filterOpenNow) {
+      if (strict) {
+        if (p.is_open_now !== true) return false
+      } else if (p.is_open_now === false) {
+        return false
+      }
+    }
+    return true
+  })
+}
+
 function normalizeRestaurantName(name: string): string {
   return name
     .normalize('NFKD')
@@ -195,8 +251,7 @@ type RestaurantCandidate = {
 function clusterKeyForCandidate(row: RestaurantCandidate): string {
   const domain = normalizeWebsiteDomain(row.website_uri)
   if (domain) return `domain:${domain}`
-  const nameKey = dedupeKeyFromName(row.name)
-  if (nameKey) return `name:${nameKey}`
+  // Same name ≠ same business; only merge by domain. Keeps more distinct options in the deck.
   return `id:${row.external_id}`
 }
 
@@ -266,6 +321,101 @@ function isFoodPlace(place: { primaryType?: string; types?: string[] }): boolean
   return false
 }
 
+async function fetchNearbyPlacesRaw(
+  apiKey: string,
+  lat: number,
+  lng: number,
+  radius: number,
+  includedTypes: string[],
+  rankPreference: 'POPULARITY' | 'DISTANCE' = 'POPULARITY',
+): Promise<GooglePlace[]> {
+  if (includedTypes.length === 0) return []
+  const placesRes = await fetch(
+    'https://places.googleapis.com/v1/places:searchNearby',
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Goog-Api-Key': apiKey,
+        'X-Goog-FieldMask': [
+          'places.id',
+          'places.displayName',
+          'places.location',
+          'places.rating',
+          'places.priceLevel',
+          'places.primaryType',
+          'places.photos',
+          'places.formattedAddress',
+          'places.regularOpeningHours',
+          'places.types',
+          'places.websiteUri',
+        ].join(','),
+      },
+      body: JSON.stringify({
+        includedTypes,
+        excludedTypes: Array.from(EXCLUDED_PLACE_TYPES),
+        maxResultCount: 20,
+        locationRestriction: {
+          circle: {
+            center: { latitude: lat, longitude: lng },
+            radius,
+          },
+        },
+        rankPreference,
+      }),
+    },
+  )
+
+  if (!placesRes.ok) {
+    console.error('Places API error', placesRes.status, await placesRes.text())
+    return []
+  }
+
+  const data = (await placesRes.json()) as { places?: GooglePlace[] }
+  return data.places ?? []
+}
+
+function googlePlaceToCandidate(
+  place: GooglePlace,
+  searchLat: number,
+  searchLng: number,
+  apiKey: string,
+): RestaurantCandidate | null {
+  if (typeof place.id !== 'string' || !place.id) return null
+  const name = place.displayName?.text ?? 'Unknown'
+  if (!dedupeKeyFromName(name)) return null
+
+  const distance =
+    typeof place.location?.latitude === 'number' && typeof place.location?.longitude === 'number'
+      ? distanceMeters(
+        searchLat,
+        searchLng,
+        place.location.latitude,
+        place.location.longitude,
+      )
+      : Number.POSITIVE_INFINITY
+
+  const websiteUri =
+    typeof place.websiteUri === 'string' && place.websiteUri.trim()
+      ? place.websiteUri.trim()
+      : null
+
+  return {
+    external_id: place.id,
+    name,
+    address: place.formattedAddress ?? null,
+    image_url: place.photos?.[0]?.name
+      ? `https://places.googleapis.com/v1/${place.photos[0].name}/media?maxHeightPx=400&maxWidthPx=400&key=${apiKey}`
+      : null,
+    rating: typeof place.rating === 'number' ? place.rating : null,
+    price_level: place.priceLevel != null ? PRICE_LEVELS[place.priceLevel] ?? null : null,
+    is_open_now: place.regularOpeningHours?.openNow ?? null,
+    round: 1,
+    website_uri: websiteUri,
+    distance_meters: distance,
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return handleOptions()
   if (req.method !== 'POST') return json({ error: 'Method not allowed' }, 405)
@@ -299,6 +449,7 @@ Deno.serve(async (req) => {
     if (typeof body.radius !== 'number' || body.radius <= 0) {
       return json({ error: 'Invalid search radius' }, 400)
     }
+    const radiusMeters = body.radius
 
     const hasPreResolvedCoords =
       typeof body.lat === 'number' && typeof body.lng === 'number' &&
@@ -360,118 +511,111 @@ Deno.serve(async (req) => {
         const mealType = typeof body.meal_type === 'string' && body.meal_type in MEAL_TYPE_DEFAULTS
           ? body.meal_type
           : 'dinner'
+        const cuisineKeys = explicitCuisineKeys(body.cuisines)
         const includedTypes = resolveIncludedTypes(body.cuisines, mealType)
-        const placesRes = await fetch(
-          'https://places.googleapis.com/v1/places:searchNearby',
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-Goog-Api-Key': apiKey,
-              'X-Goog-FieldMask': [
-                'places.id',
-                'places.displayName',
-                'places.location',
-                'places.rating',
-                'places.priceLevel',
-                'places.primaryType',
-                'places.photos',
-                'places.formattedAddress',
-                'places.regularOpeningHours',
-                'places.types',
-                'places.websiteUri',
-              ].join(','),
-            },
-            body: JSON.stringify({
-              includedTypes,
-              excludedTypes: Array.from(EXCLUDED_PLACE_TYPES),
-              maxResultCount: 20,
-              locationRestriction: {
-                circle: {
-                  center: { latitude: searchLat, longitude: searchLng },
-                  radius: body.radius,
-                },
-              },
-              rankPreference: 'POPULARITY',
-            }),
-          },
-        )
+        const cuisineTypeSet = new Set(includedTypes)
 
-        if (placesRes.ok) {
-          const data = await placesRes.json()
-          const byRestaurantName = new Map<string, {
-            external_id: string
-            name: string
-            address: string | null
-            image_url: string | null
-            rating: number | null
-            price_level: number | null
-            is_open_now: boolean | null
-            round: number
-            website_uri: string | null
-            distance_meters: number
-          }>()
-
-          for (const place of data.places ?? []) {
-            if (!isFoodPlace(place)) continue
-
-            const name = place.displayName?.text ?? 'Unknown'
-            const normalizedName = dedupeKeyFromName(name)
-            if (!normalizedName) continue
-
-            const distance =
-              typeof place.location?.latitude === 'number' && typeof place.location?.longitude === 'number'
-                ? distanceMeters(
-                  searchLat,
-                  searchLng,
-                  place.location.latitude,
-                  place.location.longitude,
-                )
-                : Number.POSITIVE_INFINITY
-
-            const websiteUri =
-              typeof place.websiteUri === 'string' && place.websiteUri.trim()
-                ? place.websiteUri.trim()
-                : null
-
-            const next = {
-              external_id: place.id,
-              name,
-              address: place.formattedAddress ?? null,
-              image_url: place.photos?.[0]?.name
-                ? `https://places.googleapis.com/v1/${place.photos[0].name}/media?maxHeightPx=400&maxWidthPx=400&key=${apiKey}`
-                : null,
-              rating: typeof place.rating === 'number' ? place.rating : null,
-              price_level: PRICE_LEVELS[place.priceLevel] ?? null,
-              is_open_now: place.regularOpeningHours?.openNow ?? null,
-              round: 1,
-              website_uri: websiteUri,
-              distance_meters: distance,
-            }
-
-            const existing = byRestaurantName.get(normalizedName)
-            if (!existing || next.distance_meters < existing.distance_meters) {
-              byRestaurantName.set(normalizedName, next)
+        let rawPlaces: GooglePlace[] = []
+        if (cuisineKeys.length >= 2) {
+          const batches = await Promise.all(
+            cuisineKeys.map((c) =>
+              fetchNearbyPlacesRaw(
+                apiKey,
+                searchLat,
+                searchLng,
+                radiusMeters,
+                FOOD_FILTER_TYPES[c] ?? [],
+              )
+            ),
+          )
+          const byId = new Map<string, GooglePlace>()
+          for (const batch of batches) {
+            for (const place of batch) {
+              if (typeof place.id !== 'string' || !place.id) continue
+              const prev = byId.get(place.id)
+              if (!prev) {
+                byId.set(place.id, place)
+                continue
+              }
+              const dNew =
+                typeof place.location?.latitude === 'number' && typeof place.location?.longitude === 'number'
+                  ? distanceMeters(
+                    searchLat,
+                    searchLng,
+                    place.location.latitude,
+                    place.location.longitude,
+                  )
+                  : Number.POSITIVE_INFINITY
+              const dPrev =
+                typeof prev.location?.latitude === 'number' && typeof prev.location?.longitude === 'number'
+                  ? distanceMeters(
+                    searchLat,
+                    searchLng,
+                    prev.location.latitude,
+                    prev.location.longitude,
+                  )
+                  : Number.POSITIVE_INFINITY
+              if (dNew < dPrev) byId.set(place.id, place)
             }
           }
-
-          const allowedPrices = Array.isArray(body.price_levels) && body.price_levels.length > 0
-            ? new Set(body.price_levels.filter((v) => typeof v === 'number'))
-            : null
-          const filterOpenNow = body.open_now === true
-
-          for (const place of byRestaurantName.values()) {
-            if (allowedPrices && place.price_level != null && !allowedPrices.has(place.price_level)) {
-              continue
-            }
-            if (filterOpenNow && place.is_open_now === false) {
-              continue
-            }
-            fromGoogle.push(place)
-          }
+          rawPlaces = [...byId.values()]
         } else {
-          console.error('Places API error', placesRes.status, await placesRes.text())
+          rawPlaces = await fetchNearbyPlacesRaw(
+            apiKey,
+            searchLat,
+            searchLng,
+            radiusMeters,
+            includedTypes,
+            'POPULARITY',
+          )
+          if (rawPlaces.length < 14) {
+            const extra = await fetchNearbyPlacesRaw(
+              apiKey,
+              searchLat,
+              searchLng,
+              radiusMeters,
+              includedTypes,
+              'DISTANCE',
+            )
+            const byId = new Map<string, GooglePlace>()
+            for (const p of rawPlaces) {
+              if (typeof p.id === 'string' && p.id) byId.set(p.id, p)
+            }
+            for (const p of extra) {
+              if (typeof p.id === 'string' && p.id && !byId.has(p.id)) byId.set(p.id, p)
+            }
+            rawPlaces = [...byId.values()]
+          }
         }
+
+        type PlaceRow = { place: GooglePlace; candidate: RestaurantCandidate }
+        const rows: PlaceRow[] = []
+        for (const place of rawPlaces) {
+          if (!isFoodPlace(place)) continue
+          const candidate = googlePlaceToCandidate(place, searchLat, searchLng, apiKey)
+          if (!candidate) continue
+          rows.push({ place, candidate })
+        }
+
+        const cuisineStrictActive = cuisineKeys.length > 0
+        const cuisineFiltered = cuisineStrictActive
+          ? rows.filter(({ place }) => placeMatchesIncludedTypes(place, cuisineTypeSet))
+          : rows
+
+        const candidates = cuisineFiltered.map((r) => r.candidate)
+
+        const allowedPrices = Array.isArray(body.price_levels) && body.price_levels.length > 0
+          ? new Set(body.price_levels.filter((v) => typeof v === 'number'))
+          : null
+        const filterOpenNow = body.open_now === true
+
+        const strictPo = filterByPriceAndOpen(candidates, allowedPrices, filterOpenNow, true)
+        const finalCandidates =
+          strictPo.length >= MIN_STRICT_RESULTS
+            ? strictPo
+            : filterByPriceAndOpen(candidates, allowedPrices, filterOpenNow, false)
+
+        fromGoogle.push(...finalCandidates)
       } catch (err) {
         console.error('Places API fetch failed', err)
       }
@@ -506,7 +650,7 @@ Deno.serve(async (req) => {
     const filters = {
       city,
       state,
-      radius: body.radius,
+      radius: radiusMeters,
       cuisines: body.cuisines ?? null,
       meal_type: body.meal_type ?? 'dinner',
       price_levels: body.price_levels ?? null,
