@@ -4,10 +4,6 @@
 # Environment files
 .env
 .env.*
-!web/.env.example
-!web/.env.example
-!web/.env.local
-!web/.env.production
 
 # Root / workspace logs
 *.log
