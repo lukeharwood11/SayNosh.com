@@ -1,0 +1,505 @@
+
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font-sans); color: var(--color-text-primary); }
+  .page { max-width: 680px; margin: 0 auto; padding: 2rem 1rem; }
+
+  .brand-hero { text-align: center; padding: 2.5rem 1rem 2rem; border-bottom: 0.5px solid var(--color-border-tertiary); margin-bottom: 2rem; }
+  .brand-logo { width: 72px; height: 72px; border-radius: 20px; background: #E8503A; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; }
+  .brand-logo svg { width: 40px; height: 40px; }
+  .brand-name { font-size: 36px; font-weight: 500; letter-spacing: -1px; color: #E8503A; }
+  .brand-tagline { font-size: 15px; color: var(--color-text-secondary); margin-top: 6px; }
+
+  .section { margin-bottom: 2.5rem; }
+  .section-title { font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-text-tertiary); margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 0.5px solid var(--color-border-tertiary); }
+  h3 { font-size: 15px; font-weight: 500; margin-bottom: 0.5rem; color: var(--color-text-primary); }
+  p { font-size: 14px; line-height: 1.6; color: var(--color-text-secondary); margin-bottom: 0.75rem; }
+
+  .color-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 1rem; }
+  .swatch { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .swatch-block { width: 56px; height: 56px; border-radius: 12px; }
+  .swatch-label { font-size: 11px; color: var(--color-text-secondary); text-align: center; }
+  .swatch-hex { font-size: 10px; color: var(--color-text-tertiary); font-family: var(--font-mono); }
+
+  .type-row { margin-bottom: 1rem; padding: 1rem; background: var(--color-background-secondary); border-radius: var(--border-radius-lg); }
+  .type-label { font-size: 10px; color: var(--color-text-tertiary); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px; }
+
+  .screen-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .phone { background: var(--color-background-secondary); border-radius: 16px; overflow: hidden; border: 0.5px solid var(--color-border-tertiary); }
+  .phone-header { background: #E8503A; padding: 10px 12px 8px; }
+  .phone-header-text { font-size: 11px; font-weight: 500; color: rgba(255,255,255,0.9); }
+  .phone-header-sub { font-size: 10px; color: rgba(255,255,255,0.65); }
+  .phone-body { padding: 10px 10px 12px; }
+
+  .card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); overflow: hidden; margin-bottom: 8px; }
+  .card-img { height: 52px; background: linear-gradient(135deg, #F5C4B3 0%, #E8503A22 100%); display: flex; align-items: center; justify-content: center; }
+  .card-img-emoji { font-size: 20px; }
+  .card-body { padding: 8px 10px; }
+  .card-name { font-size: 12px; font-weight: 500; color: var(--color-text-primary); }
+  .card-meta { font-size: 10px; color: var(--color-text-tertiary); margin-top: 2px; }
+  .swipe-row { display: flex; gap: 6px; justify-content: center; margin-top: 8px; }
+  .swipe-btn { width: 28px; height: 28px; border-radius: 50%; border: 0.5px solid var(--color-border-tertiary); background: var(--color-background-primary); display: flex; align-items: center; justify-content: center; font-size: 12px; }
+  .swipe-yes { border-color: #4CAF7D; background: #EAF7F0; }
+  .swipe-no { border-color: #E8503A; background: #FDF0EE; }
+  .swipe-meh { border-color: #888; background: var(--color-background-secondary); }
+
+  .member-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .avatar { width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 500; }
+  .av-a { background: #FAECE7; color: #993C1D; }
+  .av-b { background: #E6F1FB; color: #185FA5; }
+  .av-c { background: #E1F5EE; color: #0F6E56; }
+  .member-name { font-size: 11px; color: var(--color-text-primary); flex: 1; }
+  .member-status { font-size: 10px; color: var(--color-text-tertiary); }
+  .status-done { color: #4CAF7D; }
+
+  .winner-card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 12px; text-align: center; }
+  .winner-emoji { font-size: 28px; margin-bottom: 6px; }
+  .winner-name { font-size: 13px; font-weight: 500; color: var(--color-text-primary); }
+  .winner-meta { font-size: 10px; color: var(--color-text-tertiary); margin-top: 2px; }
+  .winner-tag { display: inline-block; margin-top: 6px; background: #FAECE7; color: #993C1D; font-size: 10px; padding: 2px 8px; border-radius: 99px; }
+
+  .r2-row { display: flex; gap: 8px; }
+  .r2-btn { flex: 1; padding: 7px 6px; border-radius: 8px; border: 0.5px solid var(--color-border-tertiary); font-size: 11px; text-align: center; background: var(--color-background-primary); color: var(--color-text-primary); }
+  .r2-btn-primary { background: #E8503A; border-color: #E8503A; color: #fff; }
+
+  .friend-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; padding: 8px; background: var(--color-background-primary); border-radius: var(--border-radius-md); border: 0.5px solid var(--color-border-tertiary); }
+  .friend-info { flex: 1; }
+  .friend-name { font-size: 12px; font-weight: 500; color: var(--color-text-primary); }
+  .friend-meta { font-size: 10px; color: var(--color-text-tertiary); }
+  .invite-btn { font-size: 10px; padding: 4px 10px; border-radius: 99px; background: #E8503A; color: #fff; border: none; }
+
+  .code-block { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 1rem; font-family: var(--font-mono); font-size: 11px; line-height: 1.7; color: var(--color-text-secondary); border: 0.5px solid var(--color-border-tertiary); overflow-x: auto; margin-bottom: 0.75rem; }
+  .kw { color: #E8503A; }
+  .str { color: #4CAF7D; }
+  .cm { color: var(--color-text-tertiary); }
+
+  .schema-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 1rem; }
+  .schema-table th { text-align: left; font-weight: 500; font-size: 11px; color: var(--color-text-tertiary); padding: 6px 10px; border-bottom: 0.5px solid var(--color-border-tertiary); }
+  .schema-table td { padding: 6px 10px; border-bottom: 0.5px solid var(--color-border-tertiary); color: var(--color-text-secondary); }
+  .schema-table tr:last-child td { border-bottom: none; }
+  .pill { display: inline-block; font-size: 10px; padding: 1px 7px; border-radius: 99px; }
+  .pill-pk { background: #FAECE7; color: #993C1D; }
+  .pill-fk { background: #E6F1FB; color: #185FA5; }
+  .pill-idx { background: #E1F5EE; color: #0F6E56; }
+
+  .table-name { font-size: 13px; font-weight: 500; margin-bottom: 6px; color: var(--color-text-primary); display: flex; align-items: center; gap: 8px; }
+  .table-wrap { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); overflow: hidden; margin-bottom: 1rem; }
+  .table-header { background: var(--color-background-secondary); padding: 8px 12px; border-bottom: 0.5px solid var(--color-border-tertiary); }
+  .table-header-name { font-size: 12px; font-weight: 500; color: var(--color-text-primary); font-family: var(--font-mono); }
+
+  .flow-step { display: flex; gap: 12px; margin-bottom: 1rem; }
+  .flow-num { width: 24px; height: 24px; min-width: 24px; border-radius: 50%; background: #E8503A; color: #fff; font-size: 11px; font-weight: 500; display: flex; align-items: center; justify-content: center; margin-top: 1px; }
+  .flow-content { flex: 1; }
+  .flow-title { font-size: 13px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 2px; }
+  .flow-desc { font-size: 12px; color: var(--color-text-secondary); line-height: 1.5; }
+
+  .edge-chip { display: inline-block; background: var(--color-background-secondary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); padding: 6px 12px; font-size: 12px; color: var(--color-text-secondary); margin: 0 6px 6px 0; }
+
+  .tech-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .tech-card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 12px; }
+  .tech-layer { font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-text-tertiary); margin-bottom: 4px; }
+  .tech-name { font-size: 13px; font-weight: 500; color: var(--color-text-primary); }
+  .tech-note { font-size: 11px; color: var(--color-text-secondary); margin-top: 2px; }
+
+  .divider { height: 0.5px; background: var(--color-border-tertiary); margin: 1.5rem 0; }
+</style>
+
+<div class="page">
+
+  <!-- BRAND HERO -->
+  <div class="brand-hero">
+    <div class="brand-logo">
+      <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M8 20C8 13.373 13.373 8 20 8C26.627 8 32 13.373 32 20" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M14 20C14 16.686 16.686 14 20 14C23.314 14 26 16.686 26 20" stroke="white" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="20" cy="26" r="4" fill="white"/>
+        <path d="M20 30V34" stroke="white" stroke-width="2" stroke-linecap="round"/>
+        <path d="M14 32H26" stroke="white" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="brand-name">nosh</div>
+    <div class="brand-tagline">where your group finally agrees on dinner</div>
+  </div>
+
+  <!-- BRAND -->
+  <div class="section">
+    <div class="section-title">Brand Identity</div>
+
+    <h3>Colors</h3>
+    <div class="color-row">
+      <div class="swatch">
+        <div class="swatch-block" style="background:#E8503A;"></div>
+        <div class="swatch-label">Nosh Red</div>
+        <div class="swatch-hex">#E8503A</div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-block" style="background:#F5C4B3;"></div>
+        <div class="swatch-label">Blush</div>
+        <div class="swatch-hex">#F5C4B3</div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-block" style="background:#1A1A1A;"></div>
+        <div class="swatch-label">Charcoal</div>
+        <div class="swatch-hex">#1A1A1A</div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-block" style="background:#F9F6F2; border: 0.5px solid #e0dbd4;"></div>
+        <div class="swatch-label">Cream</div>
+        <div class="swatch-hex">#F9F6F2</div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-block" style="background:#4CAF7D;"></div>
+        <div class="swatch-label">Yes Green</div>
+        <div class="swatch-hex">#4CAF7D</div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-block" style="background:#888780;"></div>
+        <div class="swatch-label">Meh Gray</div>
+        <div class="swatch-hex">#888780</div>
+      </div>
+    </div>
+
+    <h3>Typography</h3>
+    <div class="type-row">
+      <div class="type-label">Display / App name</div>
+      <div style="font-size: 28px; font-weight: 500; color: #E8503A; letter-spacing: -0.5px;">nosh</div>
+    </div>
+    <div class="type-row">
+      <div class="type-label">Heading</div>
+      <div style="font-size: 20px; font-weight: 500;">Where do we eat tonight?</div>
+    </div>
+    <div class="type-row">
+      <div class="type-label">Body / UI</div>
+      <div style="font-size: 14px; color: var(--color-text-secondary);">Swipe right to vote yes, left to say no, down if you don't mind.</div>
+    </div>
+    <div class="type-row">
+      <div class="type-label">Label / Meta</div>
+      <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-text-tertiary);">4 members · 2 swiped</div>
+    </div>
+
+    <h3 style="margin-top:1rem;">Voice & Tone</h3>
+    <p>Friendly, casual, and a little playful. Nosh speaks like a friend who just wants everyone to stop arguing and eat. No jargon. Short sentences. Celebrate the win when a match is found.</p>
+    <p>Examples: <em>"It's a match! 🎉"</em> not <em>"Results calculated."</em> — <em>"Still waiting on Alex..."</em> not <em>"Pending: 1 member."</em></p>
+  </div>
+
+  <!-- SCREENS -->
+  <div class="section">
+    <div class="section-title">Key Screens</div>
+    <div class="screen-grid">
+
+      <!-- Screen 1: Swipe -->
+      <div class="phone">
+        <div class="phone-header">
+          <div class="phone-header-text">Swiping</div>
+          <div class="phone-header-sub">3 of 20 left</div>
+        </div>
+        <div class="phone-body">
+          <div class="card">
+            <div class="card-img"><span class="card-img-emoji">🍜</span></div>
+            <div class="card-body">
+              <div class="card-name">Pho Garden</div>
+              <div class="card-meta">Vietnamese · 0.4 mi · $$</div>
+            </div>
+          </div>
+          <div class="swipe-row">
+            <div class="swipe-btn swipe-no">✕</div>
+            <div class="swipe-btn swipe-meh">↓</div>
+            <div class="swipe-btn swipe-yes">✓</div>
+          </div>
+          <div style="font-size:10px;color:var(--color-text-tertiary);text-align:center;margin-top:8px;">← no · meh ↓ · yes →</div>
+        </div>
+      </div>
+
+      <!-- Screen 2: Waiting room -->
+      <div class="phone">
+        <div class="phone-header">
+          <div class="phone-header-text">Waiting...</div>
+          <div class="phone-header-sub">Session #NX42</div>
+        </div>
+        <div class="phone-body">
+          <div class="member-row"><div class="avatar av-a">JK</div><div class="member-name" style="font-size:11px;">Jamie</div><div class="member-status status-done">Done</div></div>
+          <div class="member-row"><div class="avatar av-b">SR</div><div class="member-name" style="font-size:11px;">Sam</div><div class="member-status status-done">Done</div></div>
+          <div class="member-row"><div class="avatar av-c">AL</div><div class="member-name" style="font-size:11px;">Alex</div><div class="member-status">Swiping...</div></div>
+          <div style="margin-top:10px;padding:6px 8px;background:var(--color-background-primary);border-radius:8px;border:0.5px solid var(--color-border-tertiary);">
+            <div style="font-size:10px;color:var(--color-text-tertiary);">Host controls</div>
+            <div style="font-size:11px;color:#E8503A;margin-top:3px;">Skip Alex →</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Screen 3: Result -->
+      <div class="phone">
+        <div class="phone-header">
+          <div class="phone-header-text">It's a match!</div>
+          <div class="phone-header-sub">Everyone agreed</div>
+        </div>
+        <div class="phone-body">
+          <div class="winner-card">
+            <div class="winner-emoji">🍕</div>
+            <div class="winner-name">Slice & Dice</div>
+            <div class="winner-meta">Pizza · 0.2 mi · $$</div>
+            <div class="winner-tag">Strong match</div>
+          </div>
+          <div style="margin-top:8px;">
+            <div class="r2-row">
+              <div class="r2-btn">Round 2</div>
+              <div class="r2-btn r2-btn-primary">Let's go!</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- FRIENDS -->
+  <div class="section">
+    <div class="section-title">Friends & Known Users</div>
+    <p>Friends are built automatically. When a session ends, all participants are saved to each other's known users list. No friend requests — just shared history.</p>
+
+    <div class="friend-row">
+      <div class="avatar av-b" style="width:32px;height:32px;font-size:11px;">SR</div>
+      <div class="friend-info">
+        <div class="friend-name">Sam R.</div>
+        <div class="friend-meta">3 sessions together · Last: 2 days ago</div>
+      </div>
+      <button class="invite-btn">Invite</button>
+    </div>
+    <div class="friend-row">
+      <div class="avatar av-c" style="width:32px;height:32px;font-size:11px;">AL</div>
+      <div class="friend-info">
+        <div class="friend-name">Alex L.</div>
+        <div class="friend-meta">1 session together · Last: 1 week ago</div>
+      </div>
+      <button class="invite-btn">Invite</button>
+    </div>
+    <p style="font-size:12px;margin-top:0.5rem;">Guests (no account) appear by display name only and are prompted to sign up to become re-invitable.</p>
+  </div>
+
+  <!-- DB SCHEMA -->
+  <div class="section">
+    <div class="section-title">Database Schema (Supabase / Postgres)</div>
+
+    <div class="table-wrap">
+      <div class="table-header"><span class="table-header-name">sessions</span></div>
+      <table class="schema-table">
+        <tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+        <tr><td>id</td><td>uuid</td><td><span class="pill pill-pk">PK</span></td></tr>
+        <tr><td>host_id</td><td>uuid</td><td><span class="pill pill-fk">FK → users</span></td></tr>
+        <tr><td>status</td><td>text</td><td>waiting · swiping · round_two · completed</td></tr>
+        <tr><td>invite_code</td><td>text</td><td>unique, shareable</td></tr>
+        <tr><td>filters</td><td>jsonb</td><td>radius, style, cuisine, lat, lng</td></tr>
+        <tr><td>winner_restaurant_id</td><td>uuid</td><td><span class="pill pill-fk">FK → restaurants</span></td></tr>
+        <tr><td>expires_at</td><td>timestamptz</td><td>24h after created_at</td></tr>
+      </table>
+    </div>
+
+    <div class="table-wrap">
+      <div class="table-header"><span class="table-header-name">session_members</span></div>
+      <table class="schema-table">
+        <tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+        <tr><td>id</td><td>uuid</td><td><span class="pill pill-pk">PK</span></td></tr>
+        <tr><td>session_id</td><td>uuid</td><td><span class="pill pill-fk">FK → sessions</span></td></tr>
+        <tr><td>user_id</td><td>uuid</td><td><span class="pill pill-fk">FK → users</span> (null if guest)</td></tr>
+        <tr><td>display_name</td><td>text</td><td></td></tr>
+        <tr><td>has_submitted</td><td>boolean</td><td>default false</td></tr>
+        <tr><td>is_skipped</td><td>boolean</td><td>host-only toggle</td></tr>
+      </table>
+    </div>
+
+    <div class="table-wrap">
+      <div class="table-header"><span class="table-header-name">restaurants</span></div>
+      <table class="schema-table">
+        <tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+        <tr><td>id</td><td>uuid</td><td><span class="pill pill-pk">PK</span></td></tr>
+        <tr><td>session_id</td><td>uuid</td><td><span class="pill pill-fk">FK → sessions</span></td></tr>
+        <tr><td>external_id</td><td>text</td><td>Google Place ID</td></tr>
+        <tr><td>name / address / image_url</td><td>text</td><td></td></tr>
+        <tr><td>rating / price_level</td><td>numeric / int</td><td>from Google Places API</td></tr>
+        <tr><td>is_open_now</td><td>boolean</td><td>filter closed restaurants</td></tr>
+        <tr><td>round</td><td>int</td><td>1 = main, 2 = Round 2</td></tr>
+      </table>
+    </div>
+
+    <div class="table-wrap">
+      <div class="table-header"><span class="table-header-name">swipes</span></div>
+      <table class="schema-table">
+        <tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+        <tr><td>id</td><td>uuid</td><td><span class="pill pill-pk">PK</span></td></tr>
+        <tr><td>session_id</td><td>uuid</td><td><span class="pill pill-fk">FK → sessions</span></td></tr>
+        <tr><td>restaurant_id</td><td>uuid</td><td><span class="pill pill-fk">FK → restaurants</span></td></tr>
+        <tr><td>member_id</td><td>uuid</td><td><span class="pill pill-fk">FK → session_members</span></td></tr>
+        <tr><td>vote</td><td>text</td><td>yes · no · neutral</td></tr>
+        <tr><td>round</td><td>int</td><td>1 or 2</td></tr>
+      </table>
+    </div>
+
+    <div class="table-wrap">
+      <div class="table-header"><span class="table-header-name">known_users</span></div>
+      <table class="schema-table">
+        <tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+        <tr><td>user_id</td><td>uuid</td><td><span class="pill pill-fk">FK → users</span> (owner)</td></tr>
+        <tr><td>known_user_id</td><td>uuid</td><td><span class="pill pill-fk">FK → users</span></td></tr>
+        <tr><td>first_met_session_id</td><td>uuid</td><td><span class="pill pill-fk">FK → sessions</span></td></tr>
+        <tr><td>last_session_id</td><td>uuid</td><td><span class="pill pill-fk">FK → sessions</span></td></tr>
+        <tr><td>session_count</td><td>int</td><td>auto-incremented on each shared session</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- GOOGLE PLACES -->
+  <div class="section">
+    <div class="section-title">Google Places API Integration</div>
+    <p>Uses the <strong style="font-weight:500">Places API (New)</strong> — Nearby Search endpoint. Called once on session creation and cached in Supabase for the life of the session.</p>
+    <div class="code-block"><span class="kw">POST</span> https://places.googleapis.com/v1/places:searchNearby
+
+{
+  <span class="str">"includedTypes"</span>: [<span class="str">"restaurant"</span>],
+  <span class="str">"maxResultCount"</span>: 20,
+  <span class="str">"locationRestriction"</span>: {
+    <span class="str">"circle"</span>: {
+      <span class="str">"center"</span>: { <span class="str">"latitude"</span>: HOST_LAT, <span class="str">"longitude"</span>: HOST_LNG },
+      <span class="str">"radius"</span>: RADIUS_METERS
+    }
+  },
+  <span class="str">"rankPreference"</span>: <span class="str">"POPULARITY"</span>
+}
+
+<span class="cm">// Field mask fields to request:</span>
+<span class="cm">// displayName, rating, priceLevel, primaryTypeDisplayName,</span>
+<span class="cm">// photos, formattedAddress, location, regularOpeningHours.openNow</span></div>
+  </div>
+
+  <!-- MATCHING ALGORITHM -->
+  <div class="section">
+    <div class="section-title">Matching Algorithm</div>
+    <div class="flow-step">
+      <div class="flow-num">1</div>
+      <div class="flow-content">
+        <div class="flow-title">Score each restaurant</div>
+        <div class="flow-desc">All active (non-skipped) members' votes are collected. Any single "no" eliminates the restaurant. All "yes" = Strong Match. Mix of "yes" and "neutral" = Soft Match.</div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">2</div>
+      <div class="flow-content">
+        <div class="flow-title">Determine outcome</div>
+        <div class="flow-desc">One strong match → reveal winner. Multiple matches → offer "Pick for us" (highest rated) or "Round 2" (re-swipe only the matches). No matches → fall back to highest-rated neutral, or top overall.</div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">3</div>
+      <div class="flow-content">
+        <div class="flow-title">Round 2 (if chosen)</div>
+        <div class="flow-desc">Matched restaurants are re-inserted with round=2. All members reset has_submitted to false. Same swipe + match pipeline runs again. Round 2 with 1 result skips directly to reveal.</div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">4</div>
+      <div class="flow-content">
+        <div class="flow-title">Session ends → save friends</div>
+        <div class="flow-desc">save-known-users Edge Function runs, upserting all participant pairs into known_users. session_count increments on subsequent shared sessions.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EDGE FUNCTIONS -->
+  <div class="section">
+    <div class="section-title">Supabase Edge Functions</div>
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;">
+      <div style="padding:10px;background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);">
+        <div style="font-size:11px;font-family:var(--font-mono);color:#E8503A;margin-bottom:3px;">create-session</div>
+        <div style="font-size:11px;color:var(--color-text-secondary);">Calls Google Places, stores restaurants, generates invite code</div>
+      </div>
+      <div style="padding:10px;background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);">
+        <div style="font-size:11px;font-family:var(--font-mono);color:#E8503A;margin-bottom:3px;">join-session</div>
+        <div style="font-size:11px;color:var(--color-text-secondary);">Adds member, returns restaurant list for the session</div>
+      </div>
+      <div style="padding:10px;background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);">
+        <div style="font-size:11px;font-family:var(--font-mono);color:#E8503A;margin-bottom:3px;">skip-member</div>
+        <div style="font-size:11px;color:var(--color-text-secondary);">Host-only; removes member from quorum, re-checks completion</div>
+      </div>
+      <div style="padding:10px;background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);">
+        <div style="font-size:11px;font-family:var(--font-mono);color:#E8503A;margin-bottom:3px;">submit-swipes</div>
+        <div style="font-size:11px;color:var(--color-text-secondary);">Marks member submitted, checks if all non-skipped are done</div>
+      </div>
+      <div style="padding:10px;background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);">
+        <div style="font-size:11px;font-family:var(--font-mono);color:#E8503A;margin-bottom:3px;">calculate-results</div>
+        <div style="font-size:11px;color:var(--color-text-secondary);">Scores restaurants, determines if Round 2 prompt is shown</div>
+      </div>
+      <div style="padding:10px;background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);">
+        <div style="font-size:11px;font-family:var(--font-mono);color:#E8503A;margin-bottom:3px;">start-round-two</div>
+        <div style="font-size:11px;color:var(--color-text-secondary);">Copies matched restaurants, resets has_submitted for all</div>
+      </div>
+      <div style="padding:10px;background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);">
+        <div style="font-size:11px;font-family:var(--font-mono);color:#E8503A;margin-bottom:3px;">save-known-users</div>
+        <div style="font-size:11px;color:var(--color-text-secondary);">On session complete; upserts all participant pairs</div>
+      </div>
+      <div style="padding:10px;background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);">
+        <div style="font-size:11px;font-family:var(--font-mono);color:#E8503A;margin-bottom:3px;">get-known-users</div>
+        <div style="font-size:11px;color:var(--color-text-secondary);">Returns sorted known users list for quick invite flow</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TECH STACK -->
+  <div class="section">
+    <div class="section-title">Tech Stack</div>
+    <div class="tech-row">
+      <div class="tech-card">
+        <div class="tech-layer">Backend</div>
+        <div class="tech-name">Supabase</div>
+        <div class="tech-note">Postgres · Auth · Realtime · Edge Functions</div>
+      </div>
+      <div class="tech-card">
+        <div class="tech-layer">Restaurant Data</div>
+        <div class="tech-name">Google Places API</div>
+        <div class="tech-note">Nearby Search (New) · cached per session</div>
+      </div>
+      <div class="tech-card">
+        <div class="tech-layer">Frontend</div>
+        <div class="tech-name">React Native</div>
+        <div class="tech-note">iOS + Android · or Next.js for web</div>
+      </div>
+      <div class="tech-card">
+        <div class="tech-layer">Swipe UI</div>
+        <div class="tech-name">Gesture Handler</div>
+        <div class="tech-note">react-native-deck-swiper or custom</div>
+      </div>
+      <div class="tech-card">
+        <div class="tech-layer">State</div>
+        <div class="tech-name">Zustand + React Query</div>
+        <div class="tech-note">Local state + server sync</div>
+      </div>
+      <div class="tech-card">
+        <div class="tech-layer">Realtime</div>
+        <div class="tech-name">Supabase Realtime</div>
+        <div class="tech-note">Subscribes to has_submitted changes</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EDGE CASES -->
+  <div class="section">
+    <div class="section-title">Edge Cases</div>
+    <div>
+      <span class="edge-chip">Solo sessions → treat as single-voter yes</span>
+      <span class="edge-chip">Session timeout → 24h auto-expire</span>
+      <span class="edge-chip">Host skips all → minimum quorum = host</span>
+      <span class="edge-chip">Round 2 with 1 result → skip choice, go to reveal</span>
+      <span class="edge-chip">Round 2 with 0 results → use best R1 match</span>
+      <span class="edge-chip">Location denied → manual address entry</span>
+      <span class="edge-chip">All cards swiped early → remaining treated as neutral</span>
+      <span class="edge-chip">Guest in known_users → prompt to sign up for re-invite</span>
+      <span class="edge-chip">Late join → block after swiping starts</span>
+      <span class="edge-chip">Places quota → cache results, never re-fetch</span>
+    </div>
+  </div>
+
+  <!-- FUTURE -->
+  <div class="section">
+    <div class="section-title">Future Ideas</div>
+    <p>Saved cuisine preferences per user that pre-filter sessions · "Rematch" to restart with the same group · Push notifications when it's your turn to swipe · Reaction emojis on the winner reveal · Restaurant detail card with photos before swiping · Session history tab · Google Maps deep link from the winner card · Cuisine preference profiles</p>
+  </div>
+
+</div>

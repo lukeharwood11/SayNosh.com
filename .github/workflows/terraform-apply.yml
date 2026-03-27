@@ -1,0 +1,51 @@
+name: Terraform Apply
+
+on:
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: us-east-1
+  AWS_ROLE_TO_ASSUME: arn:aws:iam::891612573605:role/github-oidc
+  TERRAFORM_VERSION: "1.9.8"
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          audience: sts.amazonaws.com
+          role-to-assume: ${{ env.AWS_ROLE_TO_ASSUME }}
+          role-session-name: GitHub_to_AWS_via_FederatedOIDC
+          aws-region: ${{ env.AWS_REGION }}
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+
+      - name: Download Latest Plan Artifact
+        uses: dawidd6/action-download-artifact@v3
+        with:
+          workflow: terraform-plan.yml
+          name: terraform-plan
+          path: terraform/
+
+      - name: Download Application Artifact
+        uses: dawidd6/action-download-artifact@v3
+        with:
+          workflow: terraform-plan.yml
+          name: application
+          path: web/dist/
+
+      - name: Terraform Init and Apply
+        working-directory: terraform
+        run: |
+          terraform init
+          terraform apply tf.plan

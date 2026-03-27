@@ -1,0 +1,91 @@
+@import 'tailwindcss';
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  --color-nosh-red: #e8503a;
+  --color-nosh-blush: #f5c4b3;
+  --color-nosh-charcoal: #1a1a1a;
+  --color-nosh-cream: #f9f6f2;
+  --color-nosh-yes: #4caf7d;
+  --color-nosh-meh: #888780;
+
+  --color-background: #f9f6f2;
+  --color-foreground: #1a1a1a;
+  --color-card: #ffffff;
+  --color-card-foreground: #1a1a1a;
+  --color-popover: #ffffff;
+  --color-popover-foreground: #1a1a1a;
+  --color-primary: #e8503a;
+  --color-primary-foreground: #ffffff;
+  --color-secondary: #f5c4b3;
+  --color-secondary-foreground: #993c1d;
+  --color-muted: #f0ebe5;
+  --color-muted-foreground: #888780;
+  --color-accent: #f0ebe5;
+  --color-accent-foreground: #1a1a1a;
+  --color-destructive: #e8503a;
+  --color-destructive-foreground: #ffffff;
+  --color-border: #e5e0d9;
+  --color-input: #e5e0d9;
+  --color-ring: #e8503a;
+
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.25rem;
+
+  --font-sans: system-ui, 'Segoe UI', Roboto, sans-serif;
+}
+
+@layer base {
+  :root {
+    --safe-area-top: env(safe-area-inset-top, 0px);
+    --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  @supports (top: constant(safe-area-inset-top)) {
+    :root {
+      --safe-area-top: constant(safe-area-inset-top);
+      --safe-area-bottom: constant(safe-area-inset-bottom);
+    }
+  }
+
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply m-0 antialiased bg-background text-foreground;
+  }
+  html,
+  body,
+  #root {
+    @apply min-h-dvh;
+  }
+  html {
+    @apply font-sans;
+  }
+
+  @keyframes utensil-bob {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-4px);
+    }
+  }
+
+  .loading-fork-path,
+  .loading-knife-path {
+    animation: utensil-bob 1.25s ease-in-out infinite;
+    transform-box: fill-box;
+    transform-origin: center bottom;
+  }
+
+  .loading-knife-path {
+    animation-delay: 0.18s;
+  }
+}

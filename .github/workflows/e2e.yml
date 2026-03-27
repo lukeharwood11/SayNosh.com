@@ -1,0 +1,56 @@
+name: E2E
+
+on:
+  push:
+    paths:
+      - 'web/**'
+      - '.github/workflows/e2e.yml'
+  pull_request:
+    paths:
+      - 'web/**'
+      - '.github/workflows/e2e.yml'
+
+jobs:
+  playwright:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: web
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.node-version'
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Chromium
+        run: npx playwright install chromium --with-deps
+
+      # Optional: E2E_TEST_EMAIL_B + E2E_TEST_PASSWORD_B enable multiplayer/realtime specs
+      # (second Supabase user, e.g. ta-2 from ./create_test_users.sh).
+      - name: Run Playwright
+        env:
+          CI: true
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+          E2E_TEST_EMAIL: ${{ secrets.E2E_TEST_EMAIL }}
+          E2E_TEST_PASSWORD: ${{ secrets.E2E_TEST_PASSWORD }}
+          E2E_TEST_EMAIL_B: ${{ secrets.E2E_TEST_EMAIL_B }}
+          E2E_TEST_PASSWORD_B: ${{ secrets.E2E_TEST_PASSWORD_B }}
+        run: npm run test:e2e
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-output
+          path: |
+            web/playwright-report/
+            web/test-results/
+          retention-days: 7

@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "workspace": {
+    "name": "nosh.com",
+    "createdAt": 1774400753889,
+    "preset": "starter"
+  },
+  "authorizedRoots": [
+    "/Users/lukeharwood/code/apps/nosh.com"
+  ],
+  "reload": null
+}

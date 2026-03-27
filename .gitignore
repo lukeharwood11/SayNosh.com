@@ -1,0 +1,69 @@
+# OS files
+.DS_Store
+
+# Environment files
+.env
+.env.*
+!web/.env.example
+!web/.env.example
+!web/.env.local
+!web/.env.production
+
+# Root / workspace logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Web app build and local workspace artifacts
+web/node_modules/
+web/dist/
+web/dist-ssr/
+web/coverage/
+web/test-results/
+web/playwright-report/
+web/blob-report/
+web/playwright/.auth/
+web/.git/
+
+# OpenWork local/private artifacts
+.opencode/node_modules/
+.opencode/package.json
+.opencode/bun.lock
+.opencode/.openwork-enterprise-creators
+
+# Supabase local state
+supabase/.branches/
+supabase/.temp/
+
+# Terraform local state and secrets
+terraform/.terraform/
+terraform/tf.plan
+terraform/*.tfstate
+terraform/*.tfstate.*
+terraform/crash.log
+terraform/crash.*.log
+terraform/*.tfvars
+terraform/*.tfvars.json
+terraform/override.tf
+terraform/override.tf.json
+terraform/*_override.tf
+terraform/*_override.tf.json
+
+# Keys, certs, and common credential filenames (never commit)
+*.pem
+*.p12
+*.pfx
+id_rsa
+id_ed25519
+id_ecdsa
+*-firebase-adminsdk-*.json
+serviceAccount*.json
+credentials.json
+application_default_credentials.json
+**/client_secret*.json
+.aws/
+.netlify/
+.vercel/
