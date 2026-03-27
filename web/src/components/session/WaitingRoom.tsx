@@ -148,6 +148,7 @@ export function WaitingRoom({ session, members, onSkipMember, onStartSwiping }: 
                       size="sm"
                       className="gap-1.5"
                       disabled={wasSent || isSending}
+                      data-testid="invite-friend-button"
                       onClick={() => void sendInvite(friend.known_user_id)}
                     >
                       {wasSent ? (

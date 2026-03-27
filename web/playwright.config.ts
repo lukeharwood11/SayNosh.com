@@ -54,6 +54,7 @@ export default defineConfig({
                   name: 'multiplayer',
                   testMatch: /\/realtime-session\.spec\.ts$/,
                   dependencies: ['setup' as const, 'setup-b' as const],
+                  timeout: 240_000,
                   use: { ...devices['Desktop Chrome'] },
                 },
               ]

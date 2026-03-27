@@ -1,6 +1,14 @@
+<p align="center">
+  <img src="web/public/favicon.svg" alt="nosh logo" width="120" height="120" />
+</p>
+
 # nosh
 
-Web app and Supabase backend for **nosh** — where your group finally agrees on dinner. Product behavior and schema are defined in [`nosh_full_spec.html`](./nosh_full_spec.html).
+**Where your group finally agrees on dinner.**
+
+Nosh helps a group pick somewhere to eat without the endless back-and-forth. Someone starts a session, others join, and everyone swipes on nearby restaurants (yes, no, or “meh”) until the app surfaces places everyone can live with. This repository contains the **Vite + React + TypeScript** web client, **Supabase** (Postgres, auth, and Edge Functions), and **Terraform** for hosting the static site.
+
+Product behavior, screens, and database schema are defined in [`nosh_full_spec.html`](./nosh_full_spec.html).
 
 ## Layout
 

@@ -181,6 +181,7 @@ export function SwipeDeck({ restaurants, onVote, onComplete }: SwipeDeckProps) {
             variant="outline"
             size="icon"
             className="h-14 w-14 rounded-full border-2 border-primary text-primary hover:bg-primary/10"
+            data-testid="swipe-vote-no"
             onClick={() => handleVote('no')}
           >
             <MdClose className="h-7 w-7" />
@@ -189,6 +190,7 @@ export function SwipeDeck({ restaurants, onVote, onComplete }: SwipeDeckProps) {
             variant="outline"
             size="icon"
             className="h-11 w-11 rounded-full border-2 border-nosh-meh text-nosh-meh hover:bg-nosh-meh/10"
+            data-testid="swipe-vote-neutral"
             onClick={() => handleVote('neutral')}
           >
             <MdRemove className="h-6 w-6" />
@@ -197,6 +199,7 @@ export function SwipeDeck({ restaurants, onVote, onComplete }: SwipeDeckProps) {
             variant="outline"
             size="icon"
             className="h-14 w-14 rounded-full border-2 border-nosh-yes text-nosh-yes hover:bg-nosh-yes/10"
+            data-testid="swipe-vote-yes"
             onClick={() => handleVote('yes')}
           >
             <MdFavorite className="h-7 w-7" />

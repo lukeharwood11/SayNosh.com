@@ -62,7 +62,10 @@ function InviteCard({ invite }: { invite: PendingInvite }) {
   }, [dismiss])
 
   return (
-    <div className="animate-in slide-in-from-top-2 fade-in relative flex items-center gap-3 rounded-xl border-2 border-primary/30 bg-card p-4 shadow-lg">
+    <div
+      className="animate-in slide-in-from-top-2 fade-in relative flex items-center gap-3 rounded-xl border-2 border-primary/30 bg-card p-4 shadow-lg"
+      data-testid="session-invite-toast"
+    >
       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10">
         <MdRestaurant className="h-5 w-5 text-primary" />
       </div>
